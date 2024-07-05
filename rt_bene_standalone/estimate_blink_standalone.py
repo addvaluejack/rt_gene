@@ -11,7 +11,7 @@ import cv2
 import numpy as np
 
 script_path = os.path.dirname(os.path.realpath(__file__))
-
+lines = []
 
 def str2bool(v):
     if isinstance(v, bool):
@@ -51,6 +51,7 @@ class BlinkEstimatorFolderPair(object):
 
         start_time = time.time()
         probs = self.blink_estimator.predict(l_images_input, r_images_input)
+            
         blinks = probs >= self.blink_estimator.threshold
         print(
             "Estimated blink for {} eye-image pairs, Time: {:.5f}s".format(len(left_images), time.time() - start_time))
@@ -64,15 +65,16 @@ class BlinkEstimatorFolderPair(object):
             print("Blink: %s (p=%.3f) for image pair: %20s %20s" % ("Yes" if is_blinking else "No ", p,
                                                                     os.path.basename(left_image),
                                                                     os.path.basename(right_image)))
+            lines.append(f"{os.path.basename(left_image)} # {p}\n")
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Estimate blink from image or folder pair.')
     parser.add_argument('--left', type=str, help='Path to a left eye image or a directory containing left eye images',
-                        default=os.path.join(script_path, './samples_blink/left/'))
+                        default=os.path.join(script_path, '/home/jiangmuye/dataset/12/left/'))
     parser.add_argument('--right', type=str,
                         help='Path to a right eye image or a directory containing images right eye images',
-                        default=os.path.join(script_path, './samples_blink/right/'))
+                        default=os.path.join(script_path, '/home/jiangmuye/dataset/12//right/'))
     parser.add_argument('--model', nargs='+', type=str,
                         default=[os.path.abspath(os.path.join(script_path, '../rt_gene/model_nets/blink_model_pytorch_vgg16_allsubjects1.model'))],
                         help='List of blink estimators')
@@ -105,4 +107,7 @@ if __name__ == '__main__':
     else:
         raise Exception('Folders not found: Check that ' + left_path + ' and ' + right_path + ' exist')
 
-
+    result_file = open(f"./blink_result.txt", "w")
+    for line in lines:
+        result_file.write(line)
+    result_file.close()
