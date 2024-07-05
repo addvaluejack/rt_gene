@@ -81,7 +81,7 @@ if __name__ == '__main__':
                         help='Threshold to determine weither the prediction is positive or negative')
     parser.add_argument('--device_id', type=str, default="cuda")
     parser.add_argument('--blink_backend', type=str, choices=['tensorflow', 'pytorch'], default='pytorch')
-    parser.add_argument('--vis_blink', type=str2bool, nargs='?', default=True,
+    parser.add_argument('--vis_blink', type=str2bool, nargs='?', default=False,
                         help='Show the overlayed result on original image or not')
 
     args = parser.parse_args()

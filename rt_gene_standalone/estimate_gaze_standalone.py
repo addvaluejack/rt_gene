@@ -18,7 +18,7 @@ from rt_gene.gaze_tools import get_phi_theta_from_euler, limit_yaw
 from rt_gene.gaze_tools_standalone import euler_from_matrix
 
 script_path = os.path.dirname(os.path.realpath(__file__))
-
+lines = []
 
 def load_camera_calibration(calibration_file):
     import yaml
@@ -129,10 +129,11 @@ def estimate_gaze(base_name, color_img, dist_coefficients, camera_matrix):
                 f.write(os.path.splitext(base_name)[0] + ', [' + str(headpose[1]) + ', ' + str(headpose[0]) + ']' +
                         ', [' + str(gaze[1]) + ', ' + str(gaze[0]) + ']' + '\n')
 
+    lines.append(f"{base_name} # {subjects[0].box.tolist()} # {subjects[0].landmarks.tolist()} # {gaze_est.tolist()}\n")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Estimate gaze from images')
-    parser.add_argument('im_path', type=str, default=os.path.abspath(os.path.join(script_path, './samples_gaze/')),
+    parser.add_argument('im_path', type=str, default=os.path.abspath(os.path.join(script_path, '/home/jiangmuye/dataset/12/')),
                         nargs='?', help='Path to an image or a directory containing images')
     parser.add_argument('--calib-file', type=str, dest='calib_file', default=None, help='Camera calibration file')
     parser.add_argument('--vis-headpose', dest='vis_headpose', action='store_true', help='Display the head pose images')
@@ -145,7 +146,7 @@ if __name__ == '__main__':
     parser.add_argument('--save-estimate', dest='save_estimate', action='store_true', help='Save the predictions in a text file')
     parser.add_argument('--no-save-gaze', dest='save_gaze', action='store_false', help='Do not save the gaze images')
     parser.add_argument('--gaze_backend', choices=['tensorflow', 'pytorch'], default='tensorflow')
-    parser.add_argument('--output_path', type=str, default=os.path.abspath(os.path.join(script_path, './samples_gaze/out')),
+    parser.add_argument('--output_path', type=str, default=os.path.abspath(os.path.join(script_path, '/home/jiangmuye/dataset/12/out')),
                         help='Output directory for head pose and gaze images')
     parser.add_argument('--models', nargs='+', type=str, default=[os.path.abspath(os.path.join(script_path, '../rt_gene/model_nets/Model_allsubjects1.h5'))],
                         help='List of gaze estimators')
@@ -209,3 +210,8 @@ if __name__ == '__main__':
                 [[im_height, 0.0, im_width / 2.0], [0.0, im_height, im_height / 2.0], [0.0, 0.0, 1.0]])
 
         estimate_gaze(image_file_name, image, _dist_coefficients, _camera_matrix)
+
+        result_file = open(f"./gaze_result.txt", "w")
+        for line in lines:
+            result_file.write(line)
+        result_file.close()

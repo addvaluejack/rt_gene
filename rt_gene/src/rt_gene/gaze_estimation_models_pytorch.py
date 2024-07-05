@@ -29,7 +29,7 @@ class GazeEstimationAbstractModel(nn.Module):
         )
 
         fc = nn.Sequential(
-            nn.Linear(514, 256),
+            nn.Linear(514, 256), # 256左眼特征 256右眼特征 2头的水平角度和垂直角度
             nn.ReLU(inplace=True),
             nn.Linear(256, out_features)
         )

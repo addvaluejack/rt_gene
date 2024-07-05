@@ -18,7 +18,7 @@ def get_euler_from_phi_theta(phi, theta):
     return 0, -theta, -phi
 
 
-def get_endpoint(theta, phi, center_x, center_y, length=300):
+def get_endpoint(theta, phi, center_x, center_y, length=300): # theta 和 phi 分别是水平方向和垂直方向的夹角
     endpoint_x = -1.0 * length * math.cos(theta) * math.sin(phi) + center_x
     endpoint_y = -1.0 * length * math.sin(theta) + center_y
     return endpoint_x, endpoint_y

@@ -4,6 +4,8 @@ CMakeLists.txt.user
 .idea*
 scripts/.idea*
 .vscode
+*.jpg
+*.txt
 
 # Model files
 rt_gene/model_nets/Model_allsubjects1.h5
