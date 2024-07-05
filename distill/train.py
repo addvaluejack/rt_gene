@@ -1,19 +1,45 @@
 import cv2
 import torch
-from torchvision import transforms
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader
+from torch.optim.lr_scheduler import OneCycleLR
 from eye_model import EyeModel
-
-
-eye_transform = transforms.Compose([lambda x: cv2.resize(x, dsize=(60, 36), interpolation=cv2.INTER_CUBIC),
-                                        transforms.ToTensor(),
-                                        transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                                            std=[0.229, 0.224, 0.225])])
+from eye_dataset import EyeDataset
+from tqdm import tqdm
 
 model = EyeModel()
-left_eye = torch.stack([eye_transform(cv2.imread("/home/jiangmuye/dataset/12/left/1000.jpg")), eye_transform(cv2.imread("/home/jiangmuye/dataset/12/left/1001.jpg"))])
-right_eye = torch.stack([eye_transform(cv2.imread("/home/jiangmuye/dataset/12/right/1000.jpg")), eye_transform(cv2.imread("/home/jiangmuye/dataset/12/right/1001.jpg"))])
-keypoints = torch.stack([torch.randn(68, 2), torch.randn(68, 2)]) # Example keypoints (68 points with x, y coordinates)
 
-gaze_prediction, blink_prediction = model(left_eye, right_eye, keypoints)
-print("Gaze Prediction:", gaze_prediction.shape)
-print("Blink Prediction:", blink_prediction.shape)
+# Prepare the dataset and dataloader
+train_dataset = EyeDataset()  # Make sure YourDataset is implemented correctly
+train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True, drop_last=True)
+
+# Loss functions
+criterion_gaze = nn.MSELoss()
+criterion_blink = nn.L1Loss()
+
+# Optimizer
+optimizer = optim.Adam(model.parameters(), lr=0.8e-3, betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
+
+# Learning rate scheduler
+steps_per_epoch = len(train_loader)
+scheduler = OneCycleLR(optimizer, max_lr=0.8e-3, steps_per_epoch=steps_per_epoch, epochs=60, pct_start=0.1)
+
+# Training loop
+for epoch in range(60):
+    model.train()
+    progress_bar = tqdm(train_loader, desc=f"Epoch {epoch+1}")
+    for left_eye, right_eye, landmarks, gaze_est_gt, blink_prob_gt in progress_bar:
+        optimizer.zero_grad()
+        
+        gaze_est_pred, blink_prob_pred = model(left_eye, right_eye, landmarks)
+        
+        loss_gaze = criterion_gaze(gaze_est_pred, gaze_est_gt) * 10  # Weighted MSE loss
+        loss_blink = criterion_blink(blink_prob_pred.squeeze(), blink_prob_gt) * 15  # Weighted MAE loss
+        loss = loss_gaze + loss_blink
+        
+        loss.backward()
+        optimizer.step()
+        scheduler.step()  # Update the learning rate
+        
+        progress_bar.set_postfix(loss=loss.item())
