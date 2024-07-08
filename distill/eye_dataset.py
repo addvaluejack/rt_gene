@@ -35,7 +35,7 @@ class EyeDataset(Dataset):
     def __getitem__(self, index):
         leye_image = eye_transform(cv2.imread(f"/home/jiangmuye/dataset/12/left/{self.eye_result[index]['filename']}"))
         reye_image = eye_transform(cv2.imread(f"/home/jiangmuye/dataset/12/right/{self.eye_result[index]['filename']}"))
-        landmarks = torch.tensor(self.eye_result[index]["landmarks"])
+        landmarks = torch.tensor(self.eye_result[index]["landmarks"], dtype=torch.float32)
         gaze_est = torch.tensor(self.eye_result[index]["gaze_est"])
         blink_prob = torch.tensor(self.eye_result[index]["blink_prob"])
         return leye_image, reye_image, landmarks, gaze_est, blink_prob

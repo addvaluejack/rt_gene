@@ -6,6 +6,7 @@ scripts/.idea*
 .vscode
 *.jpg
 *.txt
+*.pth
 
 # Model files
 rt_gene/model_nets/Model_allsubjects1.h5

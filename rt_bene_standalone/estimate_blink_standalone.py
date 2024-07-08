@@ -107,7 +107,7 @@ if __name__ == '__main__':
     else:
         raise Exception('Folders not found: Check that ' + left_path + ' and ' + right_path + ' exist')
 
-    result_file = open(f"./blink_result.txt", "w")
+    result_file = open(f"./blink_result.txt", "a")
     for line in lines:
         result_file.write(line)
     result_file.close()
